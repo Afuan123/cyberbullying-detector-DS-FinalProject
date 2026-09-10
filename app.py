@@ -12,26 +12,65 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CUSTOM CSS STYLING ---
+# --- CUSTOM CSS STYLING (The Wizard Group Theme) ---
 st.markdown("""
     <style>
-    .main {
-        background-color: #0e1117;
+    /* Mengatur latar belakang utama aplikasi */
+    .stApp {
+        background-color: #0b0f19;
+        background-image: radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
+                          radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
     }
-    .stMetric, div[data-testid="stVerticalBlock"] > div:has(div.stMarkdown) {
-        border-radius: 10px;
+
+    /* Mempercantik kotak kontainer / kartu */
+    div[data-testid="stVerticalBlock"] > div:has(div.stMarkdown) {
+        border-radius: 12px;
     }
+
+    /* Tombol utama dengan aksen gradasi ungu/biru modern */
     .stButton>button {
         border-radius: 8px;
         font-weight: bold;
+        background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+        color: white;
+        border: none;
         transition: all 0.3s ease;
     }
     .stButton>button:hover {
-        border-color: #ff4b4b;
-        color: #ff4b4b;
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    }
+
+    /* Judul header dengan efek gradasi teks */
+    .wizard-title {
+        background: linear-gradient(93deg, #a855f7 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
     }
     </style>
 """, unsafe_allow_html=True)
+
+# --- SIDEBAR INFORMASI (The Wizard Group) ---
+with st.sidebar:
+    st.markdown("<h1 style='text-align: center;'>🧙‍♂️✨</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #a855f7;'>The Wizard Group</h3>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    st.header("Tentang Proyek")
+    st.markdown("""
+    **Cyberbullying Detection Dashboard**  
+    Aplikasi web cerdas untuk mendeteksi potensi toksisitas dan *cyberbullying* pada teks menggunakan Machine Learning.
+
+    * **Team:** The Wizard Group
+    * **Batch:** Data Science Batch 62
+    * **Model:** TF-IDF + SGD Classifier
+    * **Bahasa:** Inggris (*English*)
+    """)
+    st.markdown("---")
+    st.info(
+        "💡 **Tips:** Uji performa model menggunakan kalimat formal, gaul, maupun kalimat netral untuk melihat batas analisisnya.")
 
 # Inisialisasi session_state untuk teks input agar tidak hilang saat tombol diklik
 if 'input_text' not in st.session_state:
@@ -136,7 +175,7 @@ with col_result:
                 title='Peringkat Confidence Score tiap Kategori',
                 text_auto='.2f',
                 color='Skor',
-                color_continuous_scale='Blues'
+                color_continuous_scale='Purples'
             )
 
             fig.update_layout(
@@ -155,6 +194,6 @@ with col_result:
 # Footer
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: gray;'>Final Project Data Science Batch 62 • Group 3 Cyberbullying Classification</p>",
+    "<p style='text-align: center; color: gray;'>Final Project Data Science Batch 62 • The Wizard Group</p>",
     unsafe_allow_html=True
 )

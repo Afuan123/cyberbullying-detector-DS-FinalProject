@@ -64,6 +64,14 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     background-attachment: fixed;
 }
 
+/* =========================================================
+   PENGATURAN CUSTOM: SEMBUNYIKAN DEPLOY, FOOTER, & MENU BAWAAN
+   ========================================================= */
+footer {visibility: hidden !important;}                   /* Menyembunyikan footer hosted with streamlit */
+#MainMenu {visibility: hidden !important;}                /* Menyembunyikan menu titik tiga (hamburger) */
+.viewerBadge_container__1QSob {display: none !important;}
+.stDeployButton {display: none !important;}               /* Menyembunyikan tombol Deploy di pojok kanan atas */
+
 section[data-testid="stSidebar"] {
     background-color: var(--bg-panel);
     border-right: 1px solid var(--navy-border);
@@ -179,7 +187,7 @@ section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2 {
 }
 .stTextArea textarea::placeholder { color: #5c6690; }
 
-/* buttons & secondary button hover effect (sesuai gambar referensi gradasi ungu-biru) */
+/* buttons & secondary button hover effect */
 .stButton>button {
     border-radius: 10px;
     font-weight: 600;
@@ -561,3 +569,4 @@ Dibangun oleh <span class="footer-brand">The Wizard Group</span><br>
 Final Project Data Science Batch 62
 </p>
 """, unsafe_allow_html=True)
+

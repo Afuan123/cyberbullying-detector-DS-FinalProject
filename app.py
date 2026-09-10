@@ -65,12 +65,30 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 
 /* =========================================================
-   PENGATURAN CUSTOM: SEMBUNYIKAN DEPLOY, FOOTER, & MENU BAWAAN
+   PENGATURAN CUSTOM: SEMBUNYIKAN DEPLOY, FOOTER, & MENU CLOUD
    ========================================================= */
-footer {visibility: hidden !important;}                   /* Menyembunyikan footer hosted with streamlit */
-#MainMenu {visibility: hidden !important;}                /* Menyembunyikan menu titik tiga (hamburger) */
-.viewerBadge_container__1QSob {display: none !important;}
-.stDeployButton {display: none !important;}               /* Menyembunyikan tombol Deploy di pojok kanan atas */
+footer {visibility: hidden !important;}                   
+#MainMenu {visibility: hidden !important;}                
+
+/* Menyembunyikan badge pojok kanan bawah */
+.viewerBadge_container__1QSob, 
+iframe[src*="streamlit.io/badge"], 
+a[href*="streamlit.io/cloud"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Menyembunyikan tombol Deploy, Fork, & Toolbar Cloud di kanan atas */
+.stDeployButton, 
+[data-testid="stToolbar"], 
+.stAppToolbar {
+    display: none !important;
+}
+
+/* Header dibuat transparan agar bersih */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+}
 
 section[data-testid="stSidebar"] {
     background-color: var(--bg-panel);
@@ -311,7 +329,6 @@ button[kind="secondary"]:hover {
 }
 </style>
 """, unsafe_allow_html=True)
-
 # =========================================================
 # STATE
 # =========================================================

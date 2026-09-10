@@ -517,16 +517,6 @@ with col_result:
             )
             st.plotly_chart(fig, config={"displayModeBar": False})
 
-            # ---- detail preprocessing ----
-            with st.expander("Detail preprocessing teks"):
-                st.markdown(f"""
-                <div class="preprocess-block">
-                    <div class="preprocess-label">Teks asli</div>
-                    <div class="preprocess-text">{html.escape(user_input)}</div>
-                </div>
-                """, unsafe_allow_html=True)
-                st.markdown('<div class="preprocess-label">Teks setelah dibersihkan</div>', unsafe_allow_html=True)
-                st.code(cleaned_input, language=None)
     else:
         st.markdown("""
         <div class="empty-state">

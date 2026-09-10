@@ -12,6 +12,31 @@ st.set_page_config(
     layout="wide"
 )
 
+# --- CUSTOM CSS STYLING ---
+st.markdown("""
+    <style>
+    .main {
+        background-color: #0e1117;
+    }
+    .stMetric, div[data-testid="stVerticalBlock"] > div:has(div.stMarkdown) {
+        border-radius: 10px;
+    }
+    .stButton>button {
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        border-color: #ff4b4b;
+        color: #ff4b4b;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Inisialisasi session_state untuk teks input agar tidak hilang saat tombol diklik
+if 'input_text' not in st.session_state:
+    st.session_state.input_text = ""
+
 
 # Fungsi pembersih teks (harus konsisten dengan training)
 def clean_text(text):
@@ -51,9 +76,21 @@ col_input, col_result = st.columns([1, 1.2], gap="large")
 
 with col_input:
     st.subheader("✍️ Masukkan Input Teks")
+
+    # Tombol Contoh Cepat (Quick Fill) menggunakan session_state
+    st.markdown("Coba contoh kalimat instan:")
+    ex_col1, ex_col2 = st.columns(2)
+
+    if ex_col1.button("✨ Contoh Kalimat Aman"):
+        st.session_state.input_text = "The train schedule has been updated for tomorrow morning."
+    if ex_col2.button("⚠️ Contoh Cyberbullying"):
+        st.session_state.input_text = "You are so stupid, nobody wants you here!"
+
+    # Text area dihubungkan langsung dengan st.session_state.input_text
     user_input = st.text_area(
         "Ketik atau tempel tweet bahasa Inggris di sini:",
-        height=180,
+        key='input_text',
+        height=160,
         placeholder="Contoh: You are amazing and I love your work..."
     )
 
@@ -67,32 +104,30 @@ with col_result:
             st.warning("⚠️ Mohon masukkan teks terlebih dahulu sebelum menganalisis!")
         else:
             with st.spinner("Sedang memproses teks melalui model..."):
-                # 1. Bersihkan teks
                 cleaned_input = clean_text(user_input)
-
-                # 2. Prediksi Kategori
                 prediction = model_pipeline.predict([cleaned_input])[0]
-
-                # 3. Ambil decision function untuk skor tiap kelas
                 confidence_scores = model_pipeline.decision_function([cleaned_input])[0]
                 classes = model_pipeline.classes_
 
-                # Buat DataFrame dan urutkan dari skor tertinggi ke terendah
                 score_df = pd.DataFrame({
                     'Kategori': classes,
                     'Skor': confidence_scores
                 }).sort_values(by='Skor', ascending=False).reset_index(drop=True)
 
-            # --- TAMPILAN HASIL UTAMA (METRIC Keren) ---
+            # --- KARTU INDIKATOR UTAMA ---
             if prediction == "not_cyberbullying":
-                st.success(f"### ✨ Prediksi: AMAN (Not Cyberbullying)")
+                st.success("### ✨ Status: AMAN (Not Cyberbullying)")
+                st.markdown("Model mendeteksi teks ini sebagai percakapan normal/positif.")
             else:
-                st.error(f"### ⚠️ Prediksi Terdeteksi: {prediction.upper()}")
+                st.error(f"### ⚠️ Status: TERDETEKSI {prediction.upper()}")
+                st.markdown("Teks ini memiliki indikasi pola bahasa yang masuk dalam kategori *cyberbullying*.")
 
-            st.markdown(f"**Teks yang dibersihkan:** `{cleaned_input}`")
+            # Tampilkan teks yang sudah dibersihkan dalam bentuk expander
+            with st.expander("🔍 Lihat Detail Preprocessing Teks"):
+                st.write(f"**Teks Asli:** {user_input}")
+                st.write(f"**Teks Setelah Dibersihkan (Cleaned):** `{cleaned_input}`")
 
-            # --- GRAFIK PLOTLY HORIZONTAL YANG RAPI ---
-            # Grafik horizontal membuat nama kategori panjang terbaca dengan sangat jelas
+            # --- GRAFIK PLOTLY HORIZONTAL ---
             fig = px.bar(
                 score_df,
                 x='Skor',
@@ -104,23 +139,22 @@ with col_result:
                 color_continuous_scale='Blues'
             )
 
-            # Membalik sumbu y agar kategori dengan skor tertinggi berada di paling atas
             fig.update_layout(
                 yaxis={'categoryorder': 'total ascending'},
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 font_color='white',
                 margin=dict(l=20, r=20, t=40, b=20),
-                height=350
+                height=320
             )
 
             st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info(
-            "👈 Masukkan teks pada kolom di sebelah kiri, lalu klik tombol **'Analisis Teks'** untuk melihat hasil prediksi.")
+        st.info("👈 Masukkan teks atau pilih tombol contoh di sebelah kiri, lalu klik **'Analisis Teks'**.")
 
-# Footer Konsultasi Gaya Profesional
+# Footer
 st.markdown("---")
 st.markdown(
     "<p style='text-align: center; color: gray;'>Final Project Data Science Batch 62 • Group 3 Cyberbullying Classification</p>",
-    unsafe_allow_html=True)
+    unsafe_allow_html=True
+)

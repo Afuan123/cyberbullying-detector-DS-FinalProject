@@ -2,7 +2,7 @@
 Cyberbullying Tweet Classification Dashboard
 The Wizard Group — Final Project Data Science Batch 62
 
-Pipeline: TF-IDF + SGD Classifier
+Pipeline: TF-IDF + Logistic Regression
 """
 
 import streamlit as st
@@ -359,16 +359,16 @@ with st.sidebar:
 
     st.header("Tentang proyek")
     st.markdown("""
-    <div class="sidebar-card">
-    Dashboard analitik untuk mendeteksi potensi <b>cyberbullying</b> pada teks menggunakan machine learning.
-    <ul>
-        <li>Tim: The Wizard Group</li>
-        <li>Batch: Data Science Batch 62</li>
-        <li>Model: TF-IDF + SGD Classifier</li>
-        <li>Bahasa teks: Inggris</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
+        <div class="sidebar-card">
+        Dashboard analitik untuk mendeteksi potensi <b>cyberbullying</b> pada teks menggunakan machine learning.
+        <ul>
+            <li>Tim: The Wizard Group</li>
+            <li>Batch: Data Science Batch 62</li>
+            <li>Model: TF-IDF + Logistic Regression</li>
+            <li>Bahasa teks: Inggris</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="tip-card">
@@ -423,19 +423,16 @@ with col_result:
                 prediction = model_pipeline.predict([cleaned_input])[0]
                 classes = model_pipeline.classes_
 
-                raw_scores = np.atleast_1d(
-                    model_pipeline.decision_function([cleaned_input])[0]
+                # Menggunakan predict_proba khusus untuk Logistic Regression
+                probabilities = np.atleast_1d(
+                    model_pipeline.predict_proba([cleaned_input])[0]
                 ).astype(float)
-                if raw_scores.shape[0] != len(classes):
-                    raw_scores = np.array([-raw_scores[0], raw_scores[0]])
 
-                rel_conf = np.exp(raw_scores - np.max(raw_scores))
-                rel_conf = rel_conf / rel_conf.sum()
-                top_confidence_pct = float(np.max(rel_conf) * 100)
+                top_confidence_pct = float(np.max(probabilities) * 100)
 
                 score_df = pd.DataFrame({
                     "Kategori": classes,
-                    "Skor": raw_scores,
+                    "Skor": probabilities,
                 }).sort_values(by="Skor", ascending=False).reset_index(drop=True)
 
                 st.session_state.history.insert(0, {

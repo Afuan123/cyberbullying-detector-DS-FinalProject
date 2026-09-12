@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
 
 # =========================================================
 # KONFIGURASI HALAMAN
@@ -25,7 +26,24 @@ st.set_page_config(
 )
 
 # =========================================================
-# CUSTOM CSS — THE WIZARD GROUP THEME (navy / royal blue / gold)
+# EFEK KURSOR (AURORA SEPERTI SENTER)
+# =========================================================
+# JavaScript ini diload di background untuk membaca koordinat kursor dan
+# mengirimkannya ke CSS variables (--cursor-x dan --cursor-y).
+components.html("""
+<script>
+    const parentDoc = window.parent.document;
+    parentDoc.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.parent.innerWidth) * 100;
+        const y = (e.clientY / window.parent.innerHeight) * 100;
+        parentDoc.documentElement.style.setProperty('--cursor-x', x + '%');
+        parentDoc.documentElement.style.setProperty('--cursor-y', y + '%');
+    });
+</script>
+""", height=0, width=0)
+
+# =========================================================
+# CUSTOM CSS — THE WIZARD GROUP THEME
 # =========================================================
 st.markdown("""
 <style>
@@ -43,34 +61,44 @@ st.markdown("""
     --blue-soft: rgba(79, 121, 247, 0.16);
     --text-primary: #f2f4fc;
     --text-muted: #96a0c7;
+    
+    /* Warna Notifikasi */
     --ruby: #ef5468;
     --ruby-soft: rgba(239, 84, 104, 0.14);
-    --sapphire: #4f79f7;
-    --sapphire-soft: rgba(79, 121, 247, 0.14);
+    --safe-green: #10b981; /* Hijau yang lebih seimbang, tidak terlalu neon */
+    --safe-green-soft: rgba(16, 185, 129, 0.14);
+    --warning-yellow: #f59e0b; /* Kuning/Amber yang elegan */
+    --warning-yellow-soft: rgba(245, 158, 11, 0.14);
 }
 
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
 .stApp {
     background-color: var(--bg-deep);
+    /* Latar belakang menggunakan kursor sebagai titik pusat senter */
     background-image:
-        radial-gradient(circle at 12% 8%, rgba(79, 121, 247, 0.10) 0%, transparent 38%),
-        radial-gradient(circle at 88% 92%, rgba(242, 169, 59, 0.08) 0%, transparent 42%),
-        radial-gradient(1.6px 1.6px at 20% 28%, rgba(255,255,255,0.55) 0%, transparent 60%),
-        radial-gradient(1.6px 1.6px at 72% 14%, rgba(255,255,255,0.4) 0%, transparent 60%),
-        radial-gradient(1.4px 1.4px at 85% 55%, rgba(242,169,59,0.6) 0%, transparent 60%),
-        radial-gradient(1.4px 1.4px at 38% 78%, rgba(255,255,255,0.35) 0%, transparent 60%),
-        radial-gradient(1.6px 1.6px at 55% 45%, rgba(255,255,255,0.3) 0%, transparent 60%);
+        radial-gradient(circle 500px at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(79, 121, 247, 0.35) 0%, transparent 80%),
+        radial-gradient(circle 400px at calc(100% - var(--cursor-x, 50%)) calc(100% - var(--cursor-y, 50%)), rgba(147, 179, 255, 0.15) 0%, transparent 80%),
+        radial-gradient(1.6px 1.6px at 20% 28%, rgba(255,255,255,0.45) 0%, transparent 60%),
+        radial-gradient(1.6px 1.6px at 72% 14%, rgba(255,255,255,0.3) 0%, transparent 60%),
+        radial-gradient(1.4px 1.4px at 85% 55%, rgba(242,169,59,0.5) 0%, transparent 60%),
+        radial-gradient(1.4px 1.4px at 38% 78%, rgba(255,255,255,0.25) 0%, transparent 60%);
     background-attachment: fixed;
+    transition: background 0.15s ease-out; /* Memberikan efek halus saat mengikuti mouse */
 }
 
 /* =========================================================
    PENGATURAN CUSTOM: SEMBUNYIKAN DEPLOY, FOOTER, & MENU BAWAAN
    ========================================================= */
-footer {visibility: hidden !important;}                   /* Menyembunyikan footer hosted with streamlit */
-#MainMenu {visibility: hidden !important;}                /* Menyembunyikan menu titik tiga (hamburger) */
+footer {visibility: hidden !important;} 
+#MainMenu {visibility: hidden !important;} 
 .viewerBadge_container__1QSob {display: none !important;}
-.stDeployButton {display: none !important;}               /* Menyembunyikan tombol Deploy di pojok kanan atas */
+.stDeployButton {display: none !important;} 
+
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    box-shadow: none !important;
+}
 
 section[data-testid="stSidebar"] {
     background-color: var(--bg-panel);
@@ -165,7 +193,6 @@ section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2 {
     margin-top: 1rem;
 }
 
-/* bordered containers -> cards */
 [data-testid="stVerticalBlockBorderWrapper"] {
     background: var(--bg-panel);
     border: 1px solid var(--navy-border) !important;
@@ -187,7 +214,7 @@ section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2 {
 }
 .stTextArea textarea::placeholder { color: #5c6690; }
 
-/* buttons & secondary button hover effect */
+/* buttons */
 .stButton>button {
     border-radius: 10px;
     font-weight: 600;
@@ -213,15 +240,11 @@ button[kind="secondary"] {
     font-size: .85rem !important;
 }
 button[kind="secondary"]:hover {
-    background: linear-gradient(135deg, #8b5cf6 100%, #2563eb 0%) !important;
+    background: linear-gradient(135deg, #8b5cf6 0%, #2563eb 100%) !important;
     border-color: #f2a93b !important;
     color: #ffffff !important;
     box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
     transform: translateY(-1px);
-}
-.stButton>button:focus-visible {
-    outline: 2px solid var(--gold) !important;
-    outline-offset: 2px;
 }
 
 /* verdict card */
@@ -233,37 +256,26 @@ button[kind="secondary"]:hover {
     border-radius: 14px;
     margin-bottom: 1rem;
 }
-.verdict-safe { background: var(--sapphire-soft); border: 1px solid rgba(79,121,247,0.35); }
-.verdict-alert { background: var(--ruby-soft); border: 1px solid rgba(239,84,104,0.4); }
+.verdict-safe { background: var(--safe-green-soft); border: 1px solid rgba(16, 185, 129, 0.35); }
+.verdict-alert { background: var(--ruby-soft); border: 1px solid rgba(239, 84, 104, 0.4); }
+.verdict-warning { background: var(--warning-yellow-soft); border: 1px solid rgba(245, 158, 11, 0.4); }
+
 .verdict-icon {
     flex-shrink: 0;
     width: 34px; height: 34px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
 }
-.verdict-safe .verdict-icon { background: var(--sapphire); color: #0a0e27; }
+.verdict-safe .verdict-icon { background: var(--safe-green); color: #022c22; }
 .verdict-alert .verdict-icon { background: var(--ruby); color: #2b0a0e; }
+.verdict-warning .verdict-icon { background: var(--warning-yellow); color: #451a03; }
+
 .verdict-title { font-weight: 700; font-size: 1.02rem; margin-bottom: .2rem; color: var(--text-primary); }
 .verdict-desc { font-size: .86rem; color: var(--text-muted); line-height: 1.5; }
 
-/* plotly glow frame */
 [data-testid="stPlotlyChart"] {
     background: radial-gradient(circle at 50% 35%, rgba(79,121,247,0.16), transparent 72%);
     border-radius: 18px;
-}
-
-/* preprocessing */
-.preprocess-block { margin-bottom: .8rem; }
-.preprocess-label { font-size: .78rem; color: var(--text-muted); margin-bottom: .3rem; font-weight: 600; }
-.preprocess-text {
-    background: var(--bg-panel-soft);
-    border: 1px solid var(--navy-border);
-    border-radius: 10px;
-    padding: .7rem .9rem;
-    font-size: .88rem;
-    color: var(--text-primary);
-    line-height: 1.5;
-    word-break: break-word;
 }
 
 /* empty state */
@@ -289,13 +301,13 @@ button[kind="secondary"]:hover {
 }
 .history-row:last-child { border-bottom: none; }
 .history-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.history-dot-safe { background: var(--sapphire); }
+.history-dot-safe { background: var(--safe-green); }
 .history-dot-alert { background: var(--ruby); }
+.history-dot-warning { background: var(--warning-yellow); }
 .history-text { flex: 1; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .history-tag { color: var(--text-muted); font-size: .78rem; }
 .history-confidence { color: var(--gold); font-size: .78rem; font-weight: 600; min-width: 3rem; text-align: right; }
 
-/* expander */
 [data-testid="stExpander"] {
     background: var(--bg-panel-soft);
     border: 1px solid var(--navy-border) !important;
@@ -305,10 +317,6 @@ button[kind="secondary"]:hover {
 /* footer */
 .footer-text { text-align: center; color: var(--text-muted); font-size: .82rem; line-height: 1.7; }
 .footer-brand { color: var(--gold); font-weight: 600; }
-
-@media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -320,12 +328,10 @@ if "input_text" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-
 # =========================================================
 # FUNGSI BANTUAN
 # =========================================================
 def clean_text(text):
-    """Pembersih teks — harus konsisten dengan preprocessing saat training."""
     text = html.unescape(str(text))
     text = text.lower()
     text = re.sub(r'https?://\S+|www\.\S+', ' ', text)
@@ -335,11 +341,9 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-
 @st.cache_resource
 def load_model():
     return joblib.load("cyberbullying_model.pkl")
-
 
 try:
     model_pipeline = load_model()
@@ -377,7 +381,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # =========================================================
-# HERO HEADER (Diratakan rapat ke kiri dengan menghapus kolom kosong)
+# HERO HEADER
 # =========================================================
 st.markdown('<div class="hero-title">Cyberbullying Tweet Classifier</div>', unsafe_allow_html=True)
 st.markdown(
@@ -388,7 +392,7 @@ st.markdown(
 st.markdown('<hr class="gold-rule">', unsafe_allow_html=True)
 
 # =========================================================
-# LAYOUT UTAMA (Menggunakan align-items: flex-start pada CSS untuk mencegah input turun)
+# LAYOUT UTAMA
 # =========================================================
 col_input, col_result = st.columns([1, 1.2], gap="large")
 
@@ -400,7 +404,7 @@ with col_input:
         if ex_col1.button("Contoh kalimat aman", width="stretch"):
             st.session_state.input_text = "The train schedule has been updated for tomorrow morning."
         if ex_col2.button("Contoh kalimat berisiko", width="stretch"):
-            st.session_state.input_text = "You are so stupid, nobody wants you here!"
+            st.session_state.input_text = "You are so stupid, nobody wants you, go away !"
 
         user_input = st.text_area(
             "Ketik atau tempel tweet berbahasa Inggris di sini",
@@ -421,19 +425,39 @@ with col_result:
             with st.spinner("Menganalisis teks melalui model..."):
                 cleaned_input = clean_text(user_input)
                 prediction = model_pipeline.predict([cleaned_input])[0]
-                classes = model_pipeline.classes_
 
-                # Menggunakan predict_proba khusus untuk Logistic Regression
+                # Mendapatkan probability untuk setiap kelas
                 probabilities = np.atleast_1d(
                     model_pipeline.predict_proba([cleaned_input])[0]
                 ).astype(float)
 
-                top_confidence_pct = float(np.max(probabilities) * 100)
+                # Urutan kelas eksplisit sesuai request
+                desired_order = [
+                    "other_cyberbullying",
+                    "not_cyberbullying",
+                    "religion",
+                    "gender",
+                    "ethnicity",
+                    "age"
+                ]
+
+                # Mapping probabilitas asli berdasarkan class agar urutan bisa diubah
+                prob_dict = dict(zip(model_pipeline.classes_, probabilities))
+
+                ordered_classes = [c for c in desired_order if c in prob_dict]
+                # Menambahkan kelas sisa jika ada yang tidak terdaftar di desired_order (safety check)
+                for c in prob_dict:
+                    if c not in ordered_classes:
+                        ordered_classes.append(c)
+
+                ordered_probs = [prob_dict[c] for c in ordered_classes]
 
                 score_df = pd.DataFrame({
-                    "Kategori": classes,
-                    "Skor": probabilities,
-                }).sort_values(by="Skor", ascending=False).reset_index(drop=True)
+                    "Kategori": ordered_classes,
+                    "Skor": ordered_probs,
+                })
+
+                top_confidence_pct = float(np.max(probabilities) * 100)
 
                 st.session_state.history.insert(0, {
                     "text": user_input.strip(),
@@ -442,8 +466,9 @@ with col_result:
                 })
                 st.session_state.history = st.session_state.history[:8]
 
-            # ---- kartu verdict ----
+            # ---- KARTU VERDICT (NOTIFIKASI) ----
             if prediction == "not_cyberbullying":
+                # Hijau (Aman)
                 icon_svg = (
                     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" '
                     'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
@@ -459,7 +484,9 @@ with col_result:
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-            else:
+
+            elif prediction == "other_cyberbullying":
+                # Merah (Alert)
                 icon_svg = (
                     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" '
                     'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
@@ -473,24 +500,50 @@ with col_result:
                     <div class="verdict-icon">{icon_svg}</div>
                     <div>
                         <div class="verdict-title">Terindikasi {label}</div>
-                        <div class="verdict-desc">Pola bahasa pada teks ini cocok dengan karakteristik cyberbullying pada kategori tersebut.</div>
+                        <div class="verdict-desc">Pola bahasa pada teks ini masuk dalam klasifikasi bentuk cyberbullying lainnya.</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-            # ---- gauge tingkat keyakinan ----
+            else:
+                # Kuning (Warning) untuk kategori: Religion, Gender, Ethnicity, Age
+                icon_svg = (
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" '
+                    'stroke="currentColor" stroke-width="2.4" stroke-linecap="round" '
+                    'stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>'
+                    '<line x1="12" y1="9" x2="12" y2="13"></line>'
+                    '<line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+                )
+                label = html.escape(str(prediction).replace("_", " ").title())
+                st.markdown(f"""
+                <div class="verdict-card verdict-warning">
+                    <div class="verdict-icon">{icon_svg}</div>
+                    <div>
+                        <div class="verdict-title">Terindikasi {label} Cyberbullying</div>
+                        <div class="verdict-desc">Pola bahasa pada teks ini cocok dengan karakteristik cyberbullying untuk kategori terkait.</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # ---- GAUGE METER ----
+            if prediction == "not_cyberbullying":
+                gauge_color = "#10b981" # Hijau
+            elif prediction == "other_cyberbullying":
+                gauge_color = "#ef5468" # Merah
+            else:
+                gauge_color = "#f59e0b" # Kuning
+
             gauge_fig = go.Figure(go.Indicator(
                 mode="gauge+number",
                 value=top_confidence_pct,
                 number={"suffix": "%", "font": {"size": 38, "color": "#f2f4fc"}},
                 gauge={
                     "axis": {"range": [0, 100], "tickcolor": "#5c6690", "tickfont": {"color": "#8b93b8", "size": 10}},
-                    "bar": {"color": "#f2a93b", "thickness": 0.28},
+                    "bar": {"color": gauge_color, "thickness": 0.28},
                     "bgcolor": "rgba(255,255,255,0.03)",
                     "borderwidth": 0,
                     "steps": [
-                        {"range": [0, 50], "color": "rgba(79,121,247,0.12)"},
-                        {"range": [50, 100], "color": "rgba(242,169,59,0.12)"},
+                        {"range": [0, 100], "color": "rgba(255,255,255,0.04)"},
                     ],
                 },
             ))
@@ -502,15 +555,28 @@ with col_result:
                 margin=dict(l=20, r=20, t=20, b=10),
             )
             st.plotly_chart(gauge_fig, config={"displayModeBar": False})
-            st.caption("Estimasi relatif antar kategori dari confidence score model (bukan probabilitas terkalibrasi).")
+            st.caption("Skor confidence dari predict_proba model.")
 
-            # ---- grafik peringkat skor ----
-            bar_colors = ["#f2a93b" if cat == prediction else "#33417c" for cat in score_df["Kategori"]]
+            # ---- GRAFIK BAR (Kategori spesifik berdasar warna) ----
+            bar_colors = []
+            for cat in score_df["Kategori"]:
+                if cat == "not_cyberbullying":
+                    bar_colors.append("#10b981") # Hijau
+                elif cat == "other_cyberbullying":
+                    bar_colors.append("#ef5468") # Merah
+                else:
+                    bar_colors.append("#f59e0b") # Kuning (religion, gender, ethnicity, age)
+
             fig = px.bar(score_df, x="Skor", y="Kategori", orientation="h", text_auto=".2f")
             fig.update_traces(marker_color=bar_colors, marker_line_width=0, textposition="outside", textfont_color="#f2f4fc")
             fig.update_layout(
-                title=dict(text="Peringkat confidence score tiap kategori", font=dict(family="Inter", size=14, color="#f2f4fc")),
-                yaxis={"categoryorder": "total ascending", "title": None, "color": "#c7cdea"},
+                title=dict(text="Confidence score tiap kategori", font=dict(family="Inter", size=14, color="#f2f4fc")),
+                yaxis={
+                    "categoryorder": "array",
+                    "categoryarray": ordered_classes[::-1], # Dibalik agar urutannya dari atas ke bawah pada bar chart sesuai array
+                    "title": None,
+                    "color": "#c7cdea",
+                },
                 xaxis={"title": None, "color": "#c7cdea", "gridcolor": "rgba(255,255,255,0.06)"},
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -541,9 +607,18 @@ if st.session_state.history:
             raw_text = item["text"]
             snippet = raw_text[:80] + ("…" if len(raw_text) > 80 else "")
             snippet = html.escape(snippet)
-            is_safe = item["prediction"] == "not_cyberbullying"
-            dot_class = "history-dot-safe" if is_safe else "history-dot-alert"
-            label = "Aman" if is_safe else html.escape(item["prediction"].replace("_", " ").title())
+            pred = item["prediction"]
+
+            if pred == "not_cyberbullying":
+                dot_class = "history-dot-safe"
+                label = "Aman"
+            elif pred == "other_cyberbullying":
+                dot_class = "history-dot-alert"
+                label = "Other Cyberbullying"
+            else:
+                dot_class = "history-dot-warning"
+                label = html.escape(pred.replace("_", " ").title())
+
             st.markdown(f"""
             <div class="history-row">
                 <span class="history-dot {dot_class}"></span>
@@ -552,6 +627,7 @@ if st.session_state.history:
                 <span class="history-confidence">{item['confidence']:.0f}%</span>
             </div>
             """, unsafe_allow_html=True)
+
         if st.button("Bersihkan riwayat", key="clear_history"):
             st.session_state.history = []
             st.rerun()
@@ -566,4 +642,3 @@ Dibangun oleh <span class="footer-brand">The Wizard Group</span><br>
 Final Project Data Science Batch 62
 </p>
 """, unsafe_allow_html=True)
-
